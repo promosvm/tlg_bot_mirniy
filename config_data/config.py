@@ -4,7 +4,7 @@ from environs import Env
 @dataclass
 class Tgbot:
     token: str
-    admin_ids: list[int]
+    admin_ids: None
     weather_token: str
 
 @dataclass
@@ -19,7 +19,7 @@ def load_config(path: str | None = None) -> Config:
     return Config(
         tg_bot=Tgbot(
             token=env('BOT_TOKEN'),
-            admin_ids=list(map(int, env.list('ADMIN_IDS'))),
+            admin_ids = env('ADMIN_IDS').split(', '),
             weather_token=env('WEATHER_TOKEN')
         )
     )

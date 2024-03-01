@@ -3,10 +3,10 @@ import logging
 
 from aiogram import Bot, Dispatcher
 from config_data.config import Config, load_config
-from handlers import (main_handlers, 
-                      other_handlers, 
-                      get_weather, 
-                      interesting_places, 
+from handlers import (main_handlers,
+                      other_handlers,
+                      get_weather,
+                      interesting_places,
                       local_cuisene,
                       souvenirs,
                       transport,
@@ -15,7 +15,7 @@ from handlers import (main_handlers,
                       sport,
                       emergency,
                       analitic
-                      ) 
+                      )
 
 # from keyboards.main_menu import set_main_menu
 
@@ -64,9 +64,8 @@ async def main():
     # Пропускаем накопившиеся апдейты и запускаем polling
     await bot.delete_webhook(drop_pending_updates=True)
     await dp.start_polling(bot)
-    
+
 
 
 if __name__ == '__main__':
     asyncio.run(main())
- 
