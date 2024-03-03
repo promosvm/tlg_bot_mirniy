@@ -8,7 +8,7 @@ from config_data.config import Config, load_config
 #загружаем токен для погоды
 config: Config = load_config()
 WEATHER_TOKEN = config.tg_bot.weather_token
-print(WEATHER_TOKEN)
+
 router = Router()
 
 
