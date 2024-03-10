@@ -85,7 +85,6 @@ async def send_activity_report(message: Message):
 
 # Функция для создания PDF-отчета
 def generate_pdf_report(df):
-    df = generate_daily_activity_report()
     plot_activity_report(df)
     photo_input = FSInputFile(f'./base/join_report.png')
     pdf_filename = './base/join_report.pdf'

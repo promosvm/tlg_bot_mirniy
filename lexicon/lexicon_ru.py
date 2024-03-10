@@ -30,7 +30,8 @@ LEXICON_BUTTON_MONUMENTS: dict[str, str] = {
     'yngel':'Памятник М.К.Янгелю',
     'frunze':'Памятник М.В.Фрунзе',
     'dzerginskiy':'Памятник Ф.Э.Дзержинскому',
-    'gagаrin': 'Памятник Ю.А.Гагрину'
+    'gagаrin': 'Памятник Ю.А.Гагрину',
+    '45_years': ' Памятник 45 лет Космодрому'
 }
 
 LEXICON_BUTTON_PARKS: dict[str, str] = {
@@ -101,6 +102,7 @@ LEXICON_BUTTON_BUS: dict[str, str] = {
 #Hotel
 LEXICON_BUTTON_HOTEL: dict[str:str] = {
     'hotel_zary': 'Гостиница Заря',
+    'hotel_rokot': 'Гостиница Рокот',
     'hotel_energia': 'Гостиница Энергия',
     'hotel_cometa': 'Гостиница Кoмета',
     'hotel_north': 'Гостиница Север'
