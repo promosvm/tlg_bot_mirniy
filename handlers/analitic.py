@@ -3,6 +3,12 @@ import sqlite3
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import seaborn as sns
+
+#Русская кодировка для pdf
+from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.pdfbase import pdfmetrics
+
 
 from aiogram.types import Message, FSInputFile, ChatMemberUpdated, ContentType
 from aiogram.filters import Command
@@ -56,19 +62,24 @@ def generate_daily_activity_report():
                       FROM users
                       WHERE join_date >= ?
                       GROUP BY user_id''',
-                   ((datetime.now() - timedelta(days=7)).strftime('%Y-%m-%d'),))
+                   ((datetime.now() - timedelta(days=30)).strftime('%Y-%m-%d'),))
     data = cursor.fetchall()
     df = pd.DataFrame(data, columns=['user_id', 'join_date', 'join_count'])
+    df['join_date'] = pd.to_datetime(df['join_date'])
+    df['join_date'] = df['join_date'].dt.date
     return df
 
 
 # Функция для построения графика активности пользователей
 def plot_activity_report(df):
-    plt.figure(figsize=(10, 6))
-    plt.plot(df['join_date'], df['join_count'], marker='o')
-    plt.xlabel('Дата')
-    plt.ylabel('Количество подключений')
-    plt.title('Новые пользователи за 7 дней')
+    group_date = df.pivot_table(
+    index="join_date", values="join_count", aggfunc="sum"
+    )
+    plt.figure(figsize=(13, 6))
+    sns.barplot(x=group_date.index, y=group_date["join_count"])
+    plt.title("Количество новых пользователей за 30 дней")
+    plt.xlabel("Дата подключения")
+    plt.ylabel("Колличество пользователей")
     plt.grid(True)
     plt.savefig('./base/join_report.png')
 
@@ -79,16 +90,18 @@ async def send_activity_report(message: Message):
         df = generate_daily_activity_report()
         plot_activity_report(df)
         photo_input = FSInputFile(f'./base/join_report.png')
-        await message.answer("Тут отчет о подключенных пользователях за семь дней:")
+        await message.answer("Тут отчет о подключенных пользователях за тридцать дней:")
         await message.answer_photo(photo_input)
 
 
 # Функция для создания PDF-отчета
 def generate_pdf_report(df):
+    pdfmetrics.registerFont(TTFont('ArialUnicode', './base/ARIALUNI.TTF'))
     plot_activity_report(df)
     photo_input = FSInputFile(f'./base/join_report.png')
     pdf_filename = './base/join_report.pdf'
     c = canvas.Canvas(pdf_filename, pagesize=letter)
+    c.setFont('ArialUnicode', 12)
     c.drawString(100, 750, 'Отчет о подключенных пользователей')
     c.drawString(100, 730, 'Дата: {}'.format(pd.to_datetime('today').date()))
 
@@ -96,10 +109,15 @@ def generate_pdf_report(df):
     c.drawImage('./base/join_report.png', 100, 500, width=400, height=300)
 
     # Добавление таблицы с данными в PDF-отчет
-    data = [df.columns.values.tolist()] + df.values.tolist()
+    group_date = df.pivot_table(
+    index="join_date", values="join_count", aggfunc="sum"
+    )
+    group_date['join_date'] = group_date.index
+    group_date.columns = ['Количество', 'Дата']
+    data = [group_date.columns.values.tolist()] + group_date.values.tolist()
     for i, row in enumerate(data):
         for j, val in enumerate(row):
-            c.drawString(100 + j * 80, 500 - (i + 1) * 12, str(val))
+            c.drawString(200 + j * 80, 500 - (i + 1) * 12, str(val))
 
     c.showPage()
     c.save()
