@@ -2,7 +2,12 @@ import asyncio
 import logging
 
 from aiogram import Bot, Dispatcher
+from aiogram.client.default import DefaultBotProperties
+from aiogram.client.session.aiohttp import AiohttpSession
 from config_data.config import Config, load_config
+from services.auto_delete import (AutoDeleteMiddleware,
+                                  DeleteIncomingMiddleware,
+                                  configure as configure_auto_delete)
 from handlers import (main_handlers,
                       other_handlers,
                       get_weather,
@@ -36,11 +41,19 @@ async def main():
 
     # Загружаем конфиг в переменную config
     config: Config = load_config()
+    configure_auto_delete(config.auto_delete.after_seconds,
+                          config.auto_delete.user_messages,
+                          config.auto_delete.replace_messages)
 
     # Инициализируем бот и диспетчер
+    session = AiohttpSession()
+    session.middleware.register(AutoDeleteMiddleware())
     bot = Bot(token=config.tg_bot.token,
-              parse_mode='HTML')
+              session=session,
+              default=DefaultBotProperties(parse_mode='HTML'))
     dp = Dispatcher()
+    dp.message.middleware.register(DeleteIncomingMiddleware())
+    dp.callback_query.middleware.register(DeleteIncomingMiddleware())
 
     # # Настраиваем главное меню бота
     # await set_main_menu(bot)

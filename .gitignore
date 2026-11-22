@@ -1,0 +1,16 @@
+# Секреты
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Локальные данные и артефакты
+base/*.db
+.ipynb_checkpoints/
+
+# Логи
+*.log

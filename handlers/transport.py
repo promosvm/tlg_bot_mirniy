@@ -1,9 +1,10 @@
 from aiogram import F, Router
-from keyboards.keyboards import create_inline_kb
+from services.keyboard import create_inline_kb
 from aiogram.types import CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton, FSInputFile
-from lexicon.lexicon_ru import (LEXICON_BUTTON_BUS, 
+from services.text import (LEXICON_BUTTON_BUS, 
                                 LEXICON_BUTTON_TRANSPORT,
                                 LEXICON_MESSAGE)
+from services.content import get_content
 
 router = Router()
 
@@ -31,15 +32,12 @@ async def process_bus(callback: CallbackQuery):
 @router.callback_query(F.data.in_(LEXICON_BUTTON_BUS.keys()))
 @router.callback_query(F.data == 'taxi')
 async def process_all_transport(callback: CallbackQuery):
-    image_from_pc = FSInputFile(f'photo/transport/{callback.data}.jpg')
-    my_text = open(f'./information_texts/transport/{callback.data}.txt', 'r', encoding='UTF-8')
-    text = my_text.read()
+    photo_path, text = get_content('transport', callback.data)
     main_menu = InlineKeyboardButton(text='Главное меню 🔁', callback_data='main_menu')
     last_menu = InlineKeyboardButton(text='Назад ⬆️', callback_data='bus')
     keyboard = InlineKeyboardMarkup(
     inline_keyboard=[[last_menu],
                      [main_menu]]
                         )
-    await callback.message.answer_photo(image_from_pc, caption=text, parse_mode='HTML', reply_markup=keyboard)
+    await callback.message.answer_photo(FSInputFile(photo_path), caption=text, parse_mode='HTML', reply_markup=keyboard)
     await callback.answer()
-

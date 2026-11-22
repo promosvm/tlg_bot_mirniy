@@ -1,13 +1,14 @@
 from aiogram import F, Router
-from keyboards.keyboards import create_inline_kb
+from services.keyboard import create_inline_kb
 from aiogram.types import CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton, FSInputFile
-from lexicon.lexicon_ru import (LEXICON_MESSAGE,
+from services.text import (LEXICON_MESSAGE,
                                 LEXICON_BUTTON_LOCAL_CUISENE, 
                                 LEXICON_BUTTON_CAFE,
                                 LEXICON_BUTTON_DELIVERY,
                                 LEXICON_BUTTON_RESTORAN,
                                 LEXICON_BUTTON_COFFE,
                                 LEXICON_BUTTON_LOCAL_FAST_FOOD)
+from services.content import get_content
 
 router = Router()
 
@@ -42,7 +43,6 @@ async def process_start_museum(callback: CallbackQuery):
     )
     await callback.answer()
 
-
 # Этот хэндлер будет срабатывать на команду "restoran"
 @router.callback_query(F.data == 'restoran')
 async def process_start_park(callback: CallbackQuery):
@@ -53,7 +53,6 @@ async def process_start_park(callback: CallbackQuery):
     )
     await callback.answer()    
 
-
 # Этот хэндлер будет срабатывать на команду "coffe"
 @router.callback_query(F.data == 'coffe')
 async def process_start_church(callback: CallbackQuery):
@@ -63,7 +62,6 @@ async def process_start_church(callback: CallbackQuery):
         reply_markup=keyboard
     )
     await callback.answer()
-
 
 # Этот хэндлер будет срабатывать на команду "fastfood"
 @router.callback_query(F.data == 'fast_food')
@@ -77,16 +75,14 @@ async def process_start_monuments(callback: CallbackQuery):
 
 
 
-# Этот хедлендер будет срабатывать на инересные места
+# Этот хэндлер будет срабатывать на инeresting места
 @router.callback_query(F.data.in_(LEXICON_BUTTON_CAFE.keys()))
 @router.callback_query(F.data.in_(LEXICON_BUTTON_DELIVERY.keys()))
 @router.callback_query(F.data.in_(LEXICON_BUTTON_RESTORAN.keys()))
 @router.callback_query(F.data.in_(LEXICON_BUTTON_COFFE.keys()))
 @router.callback_query(F.data.in_(LEXICON_BUTTON_LOCAL_FAST_FOOD.keys()))
 async def process_start_other_places(callback: CallbackQuery):
-    image_from_pc = FSInputFile(f'photo/local_cuisine/{callback.data}.jpg')
-    my_text = open(f'./information_texts/local_cuisine/{callback.data}.txt', 'r', encoding='UTF-8')
-    text = my_text.read()
+    photo_path, text = get_content('local_cuisine', callback.data)
     main_menu = InlineKeyboardButton(text='Главное меню 🔁', callback_data='main_menu')
     #делаем кнопку назад для каждого меню
     if callback.data in LEXICON_BUTTON_CAFE.keys():
@@ -103,5 +99,5 @@ async def process_start_other_places(callback: CallbackQuery):
     inline_keyboard=[[last_menu],
                      [main_menu]]
                         )
-    await callback.message.answer_photo(image_from_pc, caption=text, parse_mode='HTML', reply_markup=keyboard)
+    await callback.message.answer_photo(FSInputFile(photo_path), caption=text, parse_mode='HTML', reply_markup=keyboard)
     await callback.answer()
